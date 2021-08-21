@@ -24,12 +24,24 @@ extern const char blob_tar[];
 #include <sys/stat.h>
 #include <signal.h>
 #include <pthread.h>
+#include <sys/auxv.h>
 
 //Do not edit, this is changed at buildtime
 int deleteAtExit=0;
  
 /* alphabet: [a-z0-9] */
 const char alphabet[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+/**
+ * Good srand seed
+ */
+void initrand(void)
+{
+    unsigned int *seed;
+
+    seed = (unsigned int *)getauxval(AT_RANDOM);
+    srand(*seed);
+}
 
 /**
  * not a cryptographically secure number
@@ -158,15 +170,10 @@ int main(int argc, char *argv[])
    getcwd(startdir, sizeof(startdir));
    strcat(startdir,"/");
 
-   //pid_t pid = getpid();
-   //srand(time(NULL));
-   
-   //char p[11];
-   //strcpy(p, ".");
-   char p[11];
-   sprintf(p + strlen(p), ".%ld", (long) getpid()); 
-  
-   //strcat(p, randomString(10));
+   char p[17];
+   initrand();
+   strcpy(p, ".blob-");
+   strcat(p, randomString(10));
 
    //Write tar blob to /tmp 
    FILE *pFile;
